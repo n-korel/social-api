@@ -1,0 +1,11 @@
+.env
+.env.local
+.env.production
+
+*.exe
+bin/
+
+*.log
+
+.vscode/
+.idea/
