@@ -21,7 +21,7 @@ func main() {
 			dsn: env.GetString("DSN", "host=localhost user=postgres password=my_pass dbname=social-api port=5432 sslmode=disable"),
 			maxOpenConns: env.Getint("DB_MAX_OPEN_CONNS", 30),
 			maxIdleConns: env.Getint("DB_MAX_IDLE_CONNS", 30),
-			maxIdleTime: env.GetString("DB_MAX_IDLE_TIME", "15min"),
+			maxIdleTime: env.GetString("DB_MAX_IDLE_TIME", "15m"),
 		},
 	}
 
@@ -35,6 +35,9 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
+
+	defer db.Close()
+	log.Println("Database has connected!")
 
 	store := store.NewStorage(db)
 
