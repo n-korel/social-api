@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/joho/godotenv"
+	"github.com/n-korel/social-api/internal/db"
 	"github.com/n-korel/social-api/internal/env"
 	"github.com/n-korel/social-api/internal/store"
 )
@@ -16,9 +17,26 @@ func main() {
 	
 	cfg := config{
 		addr: ":" + env.GetString("PORT", "8080"),
+		db: dbConfig{
+			dsn: env.GetString("DSN", "host=localhost user=postgres password=my_pass dbname=social-api port=5432 sslmode=disable"),
+			maxOpenConns: env.Getint("DB_MAX_OPEN_CONNS", 30),
+			maxIdleConns: env.Getint("DB_MAX_IDLE_CONNS", 30),
+			maxIdleTime: env.GetString("DB_MAX_IDLE_TIME", "15min"),
+		},
 	}
 
-	store := store.NewStorage(nil)
+	db, err := db.New(
+		cfg.db.dsn,
+		cfg.db.maxOpenConns,
+		cfg.db.maxIdleConns,
+		cfg.db.maxIdleTime,
+	)
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	store := store.NewStorage(db)
 
 	app := &application{
 		config: cfg,
