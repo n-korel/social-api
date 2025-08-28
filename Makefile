@@ -12,3 +12,7 @@ migrate-up:
 .PHONTY: migrate-down
 migrate-down:
 	@migrate -path=$(MIGRATIONS_PATH) -database=$(DSN) down $(filter-out $@,$(MAKECMDGOALS))
+
+.PHONTY: seed
+seed:
+	@go run cmd/migrate/seed/main.go
