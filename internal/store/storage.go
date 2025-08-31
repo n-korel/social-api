@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("Resource not found")
-	ErrConflict = errors.New("Resource already exists")
+	ErrNotFound          = errors.New("Resource not found")
+	ErrConflict          = errors.New("Resource already exists")
 	QueryTimeoutDuration = time.Second * 5
 )
 

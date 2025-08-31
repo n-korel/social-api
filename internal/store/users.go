@@ -6,10 +6,10 @@ import (
 )
 
 type User struct {
-	ID int64 `json:"id"`
-	Username string `json:"username"`
-	Email string `json:"email"`
-	Password string `json:"-"`
+	ID        int64  `json:"id"`
+	Username  string `json:"username"`
+	Email     string `json:"email"`
+	Password  string `json:"-"`
 	CreatedAt string `json:"created_at"`
 }
 
@@ -59,11 +59,11 @@ func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
 		ctx,
 		query,
 		userID,
-		).Scan(
+	).Scan(
 		&user.ID,
 		&user.Username,
-		&user.Password,
 		&user.Email,
+		&user.Password,
 		&user.CreatedAt,
 	)
 

@@ -13,3 +13,5 @@ bin/
 /postgres-data
 
 .air.toml
+
+/docs

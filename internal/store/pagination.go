@@ -45,7 +45,6 @@ func (fq PaginatedFeedQuery) Parse(r *http.Request) (PaginatedFeedQuery, error) 
 		fq.Sort = sort
 	}
 
-
 	tags := qs.Get("tags")
 	if tags != "" {
 		fq.Tags = strings.Split(tags, ",")
@@ -55,7 +54,6 @@ func (fq PaginatedFeedQuery) Parse(r *http.Request) (PaginatedFeedQuery, error) 
 	if search != "" {
 		fq.Search = search
 	}
-
 
 	return fq, nil
 }
