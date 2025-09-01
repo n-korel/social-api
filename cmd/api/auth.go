@@ -15,6 +15,11 @@ type RegisterUserPayload struct {
 	Password string `json:"password" validate:"required,min=3,max=72"`
 }
 
+type UserWithToken struct {
+	*store.User
+	Token string `json:"token"`
+}
+
 // registerUserHandler godoc
 //
 //	@Summary		Register user
@@ -29,19 +34,18 @@ type RegisterUserPayload struct {
 //	@Router			/authentication/user [post]
 func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	var payload RegisterUserPayload
-	if err := readJSON(w, r, payload); err != nil {
-		app.badRequestResponse(w, r, err)
-		return
-	}
-	
-	if err := Validate.Struct(payload); err != nil {
+	if err := readJSON(w, r, &payload); err != nil {
 		app.badRequestResponse(w, r, err)
 		return
 	}
 
+	if err := Validate.Struct(payload); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
 	user := &store.User{
 		Username: payload.Username,
-		Email: payload.Email,
+		Email:    payload.Email,
 	}
 
 	// Hash user password
@@ -60,7 +64,7 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 
 	// Store user
 	err := app.store.Users.CreateAndInvite(ctx, user, hashToken, app.config.mail.exp)
-		if err != nil {
+	if err != nil {
 		switch err {
 		case store.ErrDuplicateEmail:
 			app.badRequestResponse(w, r, err)
@@ -70,10 +74,16 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 			app.internalServerError(w, r, err)
 		}
 		return
-		}
-	// mail
+	}
 
-	if err := app.jsonResponse(w, http.StatusCreated, nil); err != nil {
+	userWithToken := UserWithToken{
+		User:  user,
+		Token: plainToken,
+	}
+
+	// Send mail
+
+	if err := app.jsonResponse(w, http.StatusCreated, userWithToken); err != nil {
 		app.internalServerError(w, r, err)
 	}
 }
