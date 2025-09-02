@@ -7,6 +7,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/n-korel/social-api/internal/db"
 	"github.com/n-korel/social-api/internal/env"
+	"github.com/n-korel/social-api/internal/mailer"
 	"github.com/n-korel/social-api/internal/store"
 	"go.uber.org/zap"
 )
@@ -36,8 +37,9 @@ func main() {
 	}
 
 	cfg := config{
-		addr:   ":" + env.GetString("PORT", "8080"),
-		apiURL: env.GetString("EXTERNAL_URL", "localhost:8080"),
+		addr:        ":" + env.GetString("PORT", "8080"),
+		apiURL:      env.GetString("EXTERNAL_URL", "localhost:8080"),
+		frontendURL: env.GetString("FRONTEND_URL", "http://localhost:4000"),
 		db: dbConfig{
 			dsn:          env.GetString("DSN", "host=localhost user=postgres password=my_pass dbname=social-api port=5432 sslmode=disable"),
 			maxOpenConns: env.Getint("DB_MAX_OPEN_CONNS", 30),
@@ -46,7 +48,12 @@ func main() {
 		},
 		env: env.GetString("ENV", "development"),
 		mail: mailConfig{
-			exp: time.Hour * 24 * 2, // 2 Days
+			exp:       time.Hour * 24 * 2, // 2 Days
+			fromEmail: env.GetString("FROM_EMAIL", ""),
+			mailTrap: mailTrapConfig{
+				username: env.GetString("MAILTRAP_USER", ""),
+				password: env.GetString("MAILTRAP_PASS", ""),
+			},
 		},
 	}
 
@@ -71,10 +78,17 @@ func main() {
 
 	store := store.NewStorage(db)
 
+	// Mailer
+	mailtrap, err := mailer.NewMailTrapClient(cfg.mail.mailTrap.username, cfg.mail.mailTrap.password, cfg.mail.fromEmail)
+	if err != nil {
+		logger.Fatal(err)
+	}
+
 	app := &application{
 		config: cfg,
 		store:  store,
 		logger: logger,
+		mailer: mailtrap,
 	}
 
 	mux := app.mount()

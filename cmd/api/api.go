@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/n-korel/social-api/docs" // swagger docs
+	"github.com/n-korel/social-api/internal/mailer"
 	"github.com/n-korel/social-api/internal/store"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
@@ -18,18 +19,27 @@ type application struct {
 	config config
 	store  store.Storage
 	logger *zap.SugaredLogger
+	mailer mailer.Client
 }
 
 type config struct {
-	addr   string
-	db     dbConfig
-	env    string
-	apiURL string
-	mail   mailConfig
+	addr        string
+	db          dbConfig
+	env         string
+	apiURL      string
+	mail        mailConfig
+	frontendURL string
 }
 
 type mailConfig struct {
-	exp time.Duration
+	mailTrap  mailTrapConfig
+	fromEmail string
+	exp       time.Duration
+}
+
+type mailTrapConfig struct {
+	username string
+	password string
 }
 
 type dbConfig struct {
