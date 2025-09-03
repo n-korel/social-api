@@ -39,7 +39,7 @@ func main() {
 	cfg := config{
 		addr:        ":" + env.GetString("PORT", "8080"),
 		apiURL:      env.GetString("EXTERNAL_URL", "localhost:8080"),
-		frontendURL: env.GetString("FRONTEND_URL", "http://localhost:4000"),
+		frontendURL: env.GetString("FRONTEND_URL", "http://localhost:5173"),
 		db: dbConfig{
 			dsn:          env.GetString("DSN", "host=localhost user=postgres password=my_pass dbname=social-api port=5432 sslmode=disable"),
 			maxOpenConns: env.Getint("DB_MAX_OPEN_CONNS", 30),

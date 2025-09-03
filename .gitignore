@@ -2,6 +2,9 @@
 .env.local
 .env.production
 
+
+**/node_modules
+**/.vscode
 *.exe
 bin/
 
