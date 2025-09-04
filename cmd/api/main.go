@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+	"github.com/n-korel/social-api/internal/auth"
 	"github.com/n-korel/social-api/internal/db"
 	"github.com/n-korel/social-api/internal/env"
 	"github.com/n-korel/social-api/internal/mailer"
@@ -55,6 +56,17 @@ func main() {
 				password: env.GetString("MAILTRAP_PASS", ""),
 			},
 		},
+		auth: authConfig{
+			basic: basicConfig{
+				user: env.GetString("AUTH_BASIC_USER", ""),
+				pass: env.GetString("AUTH_BASIC_PASS", ""),
+			},
+			token: tokenConfig{
+				secret: env.GetString("AUTH_TOKEN_SECRET", "example"),
+				exp:    time.Hour * 24 * 2, // 2 Days
+				host:   env.GetString("AUTH_TOKEN_HOST", "example"),
+			},
+		},
 	}
 
 	// Logger
@@ -84,11 +96,18 @@ func main() {
 		logger.Fatal(err)
 	}
 
+	JWTAuthenticator := auth.NewJWTAuthenticator(
+		cfg.auth.token.secret,
+		cfg.auth.token.host,
+		cfg.auth.token.host,
+	)
+
 	app := &application{
-		config: cfg,
-		store:  store,
-		logger: logger,
-		mailer: mailtrap,
+		config:        cfg,
+		store:         store,
+		logger:        logger,
+		mailer:        mailtrap,
+		authenticator: JWTAuthenticator,
 	}
 
 	mux := app.mount()
