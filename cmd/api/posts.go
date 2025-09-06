@@ -46,12 +46,13 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	user := getUserFromCtx(r)
+
 	post := &store.Post{
 		Title:   payload.Title,
 		Content: payload.Content,
 		Tags:    payload.Tags,
-		//Change after auth!!!
-		UserID: 1,
+		UserID:  user.ID,
 	}
 
 	ctx := r.Context()
@@ -106,9 +107,9 @@ func (app *application) getPostHandler(w http.ResponseWriter, r *http.Request) {
 //	@Produce		json
 //	@Param			id	path		int		true	"Post ID"
 //	@Success		204	{string}	string	"No Content"
-//	@Failure		400	{object}	error
 //	@Failure		404	{object}	error
 //	@Failure		500	{object}	error
+//	@Security		ApiKeyAuth
 //	@Router			/posts/{id} [delete]
 func (app *application) deletePostHandler(w http.ResponseWriter, r *http.Request) {
 	idParam := chi.URLParam(r, "postID")
@@ -153,7 +154,7 @@ type UpdatePostPayload struct {
 //	@Failure		404		{object}	error
 //	@Failure		500		{object}	error
 //	@Security		ApiKeyAuth
-//	@Router			/posts/{id} [put]
+//	@Router			/posts/{id} [patch]
 func (app *application) updatePostHandler(w http.ResponseWriter, r *http.Request) {
 	post := getPostFromCtx(r)
 
