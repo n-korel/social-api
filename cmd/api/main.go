@@ -10,6 +10,8 @@ import (
 	"github.com/n-korel/social-api/internal/env"
 	"github.com/n-korel/social-api/internal/mailer"
 	"github.com/n-korel/social-api/internal/store"
+	"github.com/n-korel/social-api/internal/store/cache"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
 
@@ -46,6 +48,12 @@ func main() {
 			maxOpenConns: env.Getint("DB_MAX_OPEN_CONNS", 30),
 			maxIdleConns: env.Getint("DB_MAX_IDLE_CONNS", 30),
 			maxIdleTime:  env.GetString("DB_MAX_IDLE_TIME", "15m"),
+		},
+		redisCfg: redisConfig{
+			addr:     env.GetString("REDIS_ADDR", "localhost:6379"),
+			password: env.GetString("REDIS_PW", ""),
+			db:       env.Getint("REDIS_DB", 0),
+			enabled:  env.GetBool("REDIS_ENABLED", false),
 		},
 		env: env.GetString("ENV", "development"),
 		mail: mailConfig{
@@ -88,7 +96,21 @@ func main() {
 	defer db.Close()
 	logger.Info("Database has connected!")
 
+	// Cache
+	var rdb *redis.Client
+	if cfg.redisCfg.enabled {
+		rdb = cache.NewRedisClient(
+			cfg.redisCfg.addr,
+			cfg.redisCfg.password,
+			cfg.redisCfg.db,
+		)
+		logger.Info("Redis cache has connected!")
+
+		defer rdb.Close()
+	}
+
 	store := store.NewStorage(db)
+	cacheStorage := cache.NewRedisStorage(rdb)
 
 	// Mailer
 	mailtrap, err := mailer.NewMailTrapClient(cfg.mail.mailTrap.username, cfg.mail.mailTrap.password, cfg.mail.fromEmail)
@@ -105,6 +127,7 @@ func main() {
 	app := &application{
 		config:        cfg,
 		store:         store,
+		cacheStorage:  cacheStorage,
 		logger:        logger,
 		mailer:        mailtrap,
 		authenticator: JWTAuthenticator,

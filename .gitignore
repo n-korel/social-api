@@ -14,5 +14,6 @@ bin/
 .idea/
 
 /postgres-data
+/redis-data
 
 .air.toml

@@ -14,12 +14,14 @@ import (
 	"github.com/n-korel/social-api/internal/auth"
 	"github.com/n-korel/social-api/internal/mailer"
 	"github.com/n-korel/social-api/internal/store"
+	"github.com/n-korel/social-api/internal/store/cache"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 type application struct {
 	config        config
 	store         store.Storage
+	cacheStorage  cache.Storage
 	logger        *zap.SugaredLogger
 	mailer        mailer.Client
 	authenticator auth.Authenticator
@@ -33,6 +35,14 @@ type config struct {
 	mail        mailConfig
 	frontendURL string
 	auth        authConfig
+	redisCfg    redisConfig
+}
+
+type redisConfig struct {
+	addr     string
+	password string
+	db       int
+	enabled  bool
 }
 
 type authConfig struct {
