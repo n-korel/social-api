@@ -18,6 +18,7 @@ import (
 	"github.com/n-korel/social-api/docs" // swagger docs
 	"github.com/n-korel/social-api/internal/auth"
 	"github.com/n-korel/social-api/internal/mailer"
+	"github.com/n-korel/social-api/internal/ratelimiter"
 	"github.com/n-korel/social-api/internal/service"
 	"github.com/n-korel/social-api/internal/store"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
@@ -31,6 +32,7 @@ type application struct {
 	logger        *zap.SugaredLogger
 	mailer        mailer.Client
 	authenticator auth.Authenticator
+	rateLimiter   ratelimiter.Limiter
 }
 
 type config struct {
@@ -42,6 +44,7 @@ type config struct {
 	frontendURL string
 	auth        authConfig
 	redisCfg    redisConfig
+	rateLimiter ratelimiter.Config
 }
 
 type redisConfig struct {
@@ -101,6 +104,7 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(app.RateLimiterMiddleware)
 
 	r.Use(middleware.Timeout(60 * time.Second))
 

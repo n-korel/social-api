@@ -9,6 +9,7 @@ import (
 	"github.com/n-korel/social-api/internal/db"
 	"github.com/n-korel/social-api/internal/env"
 	"github.com/n-korel/social-api/internal/mailer"
+	"github.com/n-korel/social-api/internal/ratelimiter"
 	"github.com/n-korel/social-api/internal/service"
 	"github.com/n-korel/social-api/internal/store"
 	"github.com/n-korel/social-api/internal/store/cache"
@@ -76,6 +77,11 @@ func main() {
 				host:   env.GetString("AUTH_TOKEN_HOST", "example"),
 			},
 		},
+		rateLimiter: ratelimiter.Config{
+			RequestsPerTimeFrame: env.Getint("RATELIMITER_REQUESTS_COUNT", 20),
+			TimeFrame:            time.Second * 5,
+			Enabled:              env.GetBool("RATE_LIMITER_ENABLED", true),
+		},
 	}
 
 	// Initialize Logger
@@ -112,6 +118,12 @@ func main() {
 
 		cacheStorage = cache.NewRedisStorage(rdb)
 	}
+
+	// Initialize Rate limiter
+	rateLimiter := ratelimiter.NewFixedWindowLimiter(
+		cfg.rateLimiter.RequestsPerTimeFrame,
+		cfg.rateLimiter.TimeFrame,
+	)
 
 	// Initialize repository layer
 	store := store.NewStorage(db)
@@ -158,6 +170,7 @@ func main() {
 		logger:        logger,
 		mailer:        mailtrap,
 		authenticator: JWTAuthenticator,
+		rateLimiter:   rateLimiter,
 	}
 
 	mux := app.mount()

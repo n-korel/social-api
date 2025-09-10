@@ -7,7 +7,12 @@ import (
 
 
 func TestGetUser(t *testing.T) {
-	app := newTestApplication(t)
+		withRedis := config{
+		redisCfg: redisConfig{
+			enabled: true,
+		},
+	}
+	app := newTestApplication(t, withRedis)
 	mux := app.mount()
 
 	testToken, err := app.authenticator.GenerateToken(nil)

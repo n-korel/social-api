@@ -6,12 +6,13 @@ import (
 	"testing"
 
 	"github.com/n-korel/social-api/internal/auth"
+	"github.com/n-korel/social-api/internal/ratelimiter"
 	"github.com/n-korel/social-api/internal/store"
 	"github.com/n-korel/social-api/internal/store/cache"
 	"go.uber.org/zap"
 )
 
-func newTestApplication(t *testing.T) *application {
+func newTestApplication(t *testing.T,  cfg config) *application {
 	t.Helper()
 
 	logger := zap.NewNop().Sugar()
@@ -20,11 +21,19 @@ func newTestApplication(t *testing.T) *application {
 
 	testAuth := &auth.TestAuthenticator{}
 
+	// Rate limiter
+	rateLimiter := ratelimiter.NewFixedWindowLimiter(
+		cfg.rateLimiter.RequestsPerTimeFrame,
+		cfg.rateLimiter.TimeFrame,
+	)
+
 	return &application{
 		logger:        logger,
 		store:         mockStore,
 		cacheStorage:  mockCachestore,
 		authenticator: testAuth,
+		config: cfg,
+		rateLimiter: rateLimiter,
 	}
 }
 
