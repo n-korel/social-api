@@ -677,22 +677,10 @@ const docTemplate = `{
         "main.UserWithToken": {
             "type": "object",
             "properties": {
-                "created_at": {
-                    "type": "string"
-                },
                 "email": {
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
-                },
-                "is_active": {
-                    "type": "boolean"
-                },
-                "role": {
-                    "$ref": "#/definitions/store.Role"
-                },
-                "role_id": {
                     "type": "integer"
                 },
                 "token": {

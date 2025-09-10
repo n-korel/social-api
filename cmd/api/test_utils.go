@@ -21,13 +21,12 @@ func newTestApplication(t *testing.T) *application {
 	testAuth := &auth.TestAuthenticator{}
 
 	return &application{
-		logger: logger,
-		store: mockStore,
-		cacheStorage: mockCachestore,
+		logger:        logger,
+		store:         mockStore,
+		cacheStorage:  mockCachestore,
 		authenticator: testAuth,
 	}
 }
-
 
 func executeRequest(req *http.Request, mux http.Handler) *httptest.ResponseRecorder {
 	w := httptest.NewRecorder()
@@ -35,7 +34,6 @@ func executeRequest(req *http.Request, mux http.Handler) *httptest.ResponseRecor
 
 	return w
 }
-
 
 func checkResponseCode(t *testing.T, expected, actual int) {
 	if expected != actual {

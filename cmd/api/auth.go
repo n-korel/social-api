@@ -1,16 +1,7 @@
 package main
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
-	"fmt"
 	"net/http"
-	"time"
-
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
-	"github.com/n-korel/social-api/internal/mailer"
-	"github.com/n-korel/social-api/internal/store"
 )
 
 type RegisterUserPayload struct {
@@ -20,8 +11,10 @@ type RegisterUserPayload struct {
 }
 
 type UserWithToken struct {
-	*store.User
-	Token string `json:"token"`
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Token    string `json:"token"`
 }
 
 // registerUserHandler godoc
@@ -47,73 +40,27 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		app.badRequestResponse(w, r, err)
 		return
 	}
-	user := &store.User{
-		Username: payload.Username,
-		Email:    payload.Email,
-		Role: store.Role{
-			Name: "user",
-		},
-	}
-
-	// Hash user password
-	if err := user.Password.Set(payload.Password); err != nil {
-		app.internalServerError(w, r, err)
-		return
-	}
 
 	ctx := r.Context()
 
-	plainToken := uuid.New().String()
-
-	// Hash token for storage but keep plain token for email
-	hash := sha256.Sum256([]byte(plainToken))
-	hashToken := hex.EncodeToString(hash[:])
-
-	// Store user
-	err := app.store.Users.CreateAndInvite(ctx, user, hashToken, app.config.mail.exp)
+	// Service layer
+	user, token, err := app.services.Users.RegisterUser(
+		ctx,
+		payload.Username,
+		payload.Email,
+		payload.Password,
+	)
 	if err != nil {
-		switch err {
-		case store.ErrDuplicateEmail:
-			app.badRequestResponse(w, r, err)
-		case store.ErrDuplicateUsername:
-			app.badRequestResponse(w, r, err)
-		default:
-			app.internalServerError(w, r, err)
-		}
+		app.handleServiceError(w, r, err)
 		return
 	}
 
 	userWithToken := UserWithToken{
-		User:  user,
-		Token: plainToken,
+		ID:       user.ID,
+		Username: user.Username,
+		Email:    user.Email,
+		Token:    token,
 	}
-
-	activationURL := fmt.Sprintf("%s/confirm/%s", app.config.frontendURL, plainToken)
-
-	isProdEnv := app.config.env == "production"
-	vars := struct {
-		Username      string
-		ActivationURL string
-	}{
-		Username:      user.Username,
-		ActivationURL: activationURL,
-	}
-
-	// Send mail
-	status, err := app.mailer.Send(mailer.UserWelcomeTemplate, user.Username, user.Email, vars, !isProdEnv)
-	if err != nil {
-		app.logger.Errorw("Error sending email", "error", err)
-
-		// Rollback user creation if email fails
-		if err := app.store.Users.Delete(ctx, user.ID); err != nil {
-			app.logger.Errorw("Error deleting user", "error", err)
-		}
-
-		app.internalServerError(w, r, err)
-		return
-	}
-
-	app.logger.Infow("Email sent", "status code", status)
 
 	if err := app.jsonResponse(w, http.StatusCreated, userWithToken); err != nil {
 		app.internalServerError(w, r, err)
@@ -151,36 +98,16 @@ func (app *application) createTokenHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	// Fetch User (check if user exist) from payload
-	user, err := app.store.Users.GetByEmail(r.Context(), payload.Email)
+	ctx := r.Context()
+
+	// Service layer
+	token, err := app.services.Auth.CreateToken(
+		ctx,
+		payload.Email,
+		payload.Password,
+	)
 	if err != nil {
-		switch err {
-		case store.ErrNotFound:
-			app.unauthorizedErrorResponse(w, r, err)
-		default:
-			app.internalServerError(w, r, err)
-		}
-		return
-	}
-
-	if err := user.Password.Compare(payload.Password); err != nil {
-		app.unauthorizedErrorResponse(w, r, err)
-		return
-	}
-
-	claims := jwt.MapClaims{
-		"sub": user.ID,
-		"exp": time.Now().Add(app.config.auth.token.exp).Unix(),
-		"iat": time.Now().Unix(),
-		"nbf": time.Now().Unix(),
-		"iss": app.config.auth.token.host,
-		"aud": app.config.auth.token.host,
-	}
-
-	// Generate token -> add claims
-	token, err := app.authenticator.GenerateToken(claims)
-	if err != nil {
-		app.internalServerError(w, r, err)
+		app.handleServiceError(w, r, err)
 		return
 	}
 

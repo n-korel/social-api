@@ -6,9 +6,9 @@ import (
 	"github.com/n-korel/social-api/internal/store"
 )
 
-func NewMockStore() Storage {
-	return Storage{
-		Users: &MockUserStore{},
+func NewMockStore() *Storage {
+	return &Storage{
+		users: &MockUserStore{},
 	}
 }
 

@@ -40,11 +40,11 @@ func (s *UserStore) Get(ctx context.Context, userID int64) (*store.User, error) 
 func (s *UserStore) Set(ctx context.Context, user *store.User) error {
 	cacheKey := fmt.Sprintf("user-%v", user.ID)
 
-	json, err := json.Marshal(user)
+	jsonData, err := json.Marshal(user)
 	if err != nil {
-		return nil
+		return err
 	}
 
-	return s.rdb.SetEx(ctx, cacheKey, json, UserExpTime).Err()
+	return s.rdb.SetEx(ctx, cacheKey, jsonData, UserExpTime).Err()
 
 }

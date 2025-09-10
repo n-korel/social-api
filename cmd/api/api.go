@@ -18,15 +18,16 @@ import (
 	"github.com/n-korel/social-api/docs" // swagger docs
 	"github.com/n-korel/social-api/internal/auth"
 	"github.com/n-korel/social-api/internal/mailer"
+	"github.com/n-korel/social-api/internal/service"
 	"github.com/n-korel/social-api/internal/store"
-	"github.com/n-korel/social-api/internal/store/cache"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 type application struct {
 	config        config
 	store         store.Storage
-	cacheStorage  cache.Storage
+	cacheStorage  service.CacheStorage
+	services      *service.Services
 	logger        *zap.SugaredLogger
 	mailer        mailer.Client
 	authenticator auth.Authenticator
@@ -114,8 +115,6 @@ func (app *application) mount() http.Handler {
 			r.Post("/", app.createPostHandler)
 
 			r.Route("/{postID}", func(r chi.Router) {
-				r.Use(app.postsContextMiddleware)
-
 				r.Get("/", app.getPostHandler)
 				r.Patch("/", app.checkPostOwnership("moderator", app.updatePostHandler))
 				r.Delete("/", app.checkPostOwnership("admin", app.deletePostHandler))
@@ -166,7 +165,6 @@ func (app *application) run(mux http.Handler) error {
 		IdleTimeout:  time.Minute,
 	}
 
-
 	// SERVER SHUTDOWN
 	shutdown := make(chan error)
 
@@ -185,8 +183,6 @@ func (app *application) run(mux http.Handler) error {
 	}()
 
 	app.logger.Infow("Server has started", "addd", app.config.addr, "env", app.config.env)
-
-
 
 	err := server.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {

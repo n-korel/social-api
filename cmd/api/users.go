@@ -34,16 +34,13 @@ func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := app.getUser(r.Context(), userID)
+	ctx := r.Context()
+
+	// Service layer with cache enabled
+	user, err := app.services.Users.GetUserByID(ctx, userID, true)
 	if err != nil {
-		switch err {
-		case store.ErrNotFound:
-			app.notFoundResponse(w, r, err)
-			return
-		default:
-			app.internalServerError(w, r, err)
-			return
-		}
+		app.handleServiceError(w, r, err)
+		return
 	}
 
 	if err := app.jsonResponse(w, http.StatusOK, user); err != nil {
@@ -76,15 +73,10 @@ func (app *application) followUserHandler(w http.ResponseWriter, r *http.Request
 
 	ctx := r.Context()
 
-	if err := app.store.Followers.Follow(ctx, followerUser.ID, followedUserID); err != nil {
-		switch err {
-		case store.ErrConflict:
-			app.conflictResponse(w, r, err)
-			return
-		default:
-			app.internalServerError(w, r, err)
-			return
-		}
+	// Service layer
+	if err := app.services.Users.FollowUser(ctx, followerUser.ID, followedUserID); err != nil {
+		app.handleServiceError(w, r, err)
+		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
@@ -114,8 +106,9 @@ func (app *application) unfollowUserHandler(w http.ResponseWriter, r *http.Reque
 
 	ctx := r.Context()
 
-	if err := app.store.Followers.Unfollow(ctx, followerUser.ID, unfollowedUserID); err != nil {
-		app.internalServerError(w, r, err)
+	// Service layer
+	if err := app.services.Users.UnfollowUser(ctx, followerUser.ID, unfollowedUserID); err != nil {
+		app.handleServiceError(w, r, err)
 		return
 	}
 
@@ -137,14 +130,11 @@ func (app *application) unfollowUserHandler(w http.ResponseWriter, r *http.Reque
 func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Request) {
 	token := chi.URLParam(r, "token")
 
-	err := app.store.Users.Activate(r.Context(), token)
-	if err != nil {
-		switch err {
-		case store.ErrNotFound:
-			app.notFoundResponse(w, r, err)
-		default:
-			app.internalServerError(w, r, err)
-		}
+	ctx := r.Context()
+
+	// Service layer
+	if err := app.services.Users.ActivateUser(ctx, token); err != nil {
+		app.handleServiceError(w, r, err)
 		return
 	}
 

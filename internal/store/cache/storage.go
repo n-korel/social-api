@@ -1,22 +1,21 @@
 package cache
 
 import (
-	"context"
-
-	"github.com/n-korel/social-api/internal/store"
+	"github.com/n-korel/social-api/internal/service"
 	"github.com/redis/go-redis/v9"
 )
 
 type Storage struct {
-	Users interface {
-		Get(context.Context, int64) (*store.User, error)
-		Set(context.Context, *store.User) error
-	}
+	users service.UserCache
 }
 
-func NewRedisStorage(rdb *redis.Client) Storage {
-	return Storage{
-		Users: &UserStore{
+func (s *Storage) Users() service.UserCache {
+	return s.users
+}
+
+func NewRedisStorage(rdb *redis.Client) *Storage {
+	return &Storage{
+		users: &UserStore{
 			rdb: rdb,
 		},
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/n-korel/social-api/internal/db"
 	"github.com/n-korel/social-api/internal/env"
 	"github.com/n-korel/social-api/internal/mailer"
+	"github.com/n-korel/social-api/internal/service"
 	"github.com/n-korel/social-api/internal/store"
 	"github.com/n-korel/social-api/internal/store/cache"
 	"github.com/redis/go-redis/v9"
@@ -77,11 +78,11 @@ func main() {
 		},
 	}
 
-	// Logger
+	// Initialize Logger
 	logger := zap.Must(zap.NewProduction()).Sugar()
 	defer logger.Sync()
 
-	// Database
+	// Initialize Database
 	db, err := db.New(
 		cfg.db.dsn,
 		cfg.db.maxOpenConns,
@@ -96,38 +97,64 @@ func main() {
 	defer db.Close()
 	logger.Info("Database has connected!")
 
-	// Cache
+	// Initialize cache
 	var rdb *redis.Client
+	var cacheStorage service.CacheStorage
+
 	if cfg.redisCfg.enabled {
 		rdb = cache.NewRedisClient(
 			cfg.redisCfg.addr,
 			cfg.redisCfg.password,
 			cfg.redisCfg.db,
 		)
-		logger.Info("Redis cache has connected!")
-
+		logger.Info("Redis cache connected!")
 		defer rdb.Close()
+
+		cacheStorage = cache.NewRedisStorage(rdb)
 	}
 
+	// Initialize repository layer
 	store := store.NewStorage(db)
-	cacheStorage := cache.NewRedisStorage(rdb)
 
-	// Mailer
+	// Initialize Mailer
 	mailtrap, err := mailer.NewMailTrapClient(cfg.mail.mailTrap.username, cfg.mail.mailTrap.password, cfg.mail.fromEmail)
 	if err != nil {
 		logger.Fatal(err)
 	}
 
+	// Initialize Authenticator
 	JWTAuthenticator := auth.NewJWTAuthenticator(
 		cfg.auth.token.secret,
 		cfg.auth.token.host,
 		cfg.auth.token.host,
 	)
 
+	// Initialize Service layer
+	userServiceConfig := service.UserServiceConfig{
+		FrontendURL:     cfg.frontendURL,
+		MailExpiration:  cfg.mail.exp,
+		IsProductionEnv: cfg.env == "production",
+	}
+
+	authServiceConfig := service.AuthServiceConfig{
+		TokenExpiration: cfg.auth.token.exp,
+		TokenHost:       cfg.auth.token.host,
+	}
+
+	services := service.NewServices(
+		store,
+		cacheStorage,
+		mailtrap,
+		JWTAuthenticator,
+		userServiceConfig,
+		authServiceConfig,
+	)
+
 	app := &application{
 		config:        cfg,
 		store:         store,
 		cacheStorage:  cacheStorage,
+		services:      services,
 		logger:        logger,
 		mailer:        mailtrap,
 		authenticator: JWTAuthenticator,
