@@ -56,4 +56,3 @@ func (fq PaginatedFeedQuery) Parse(r *http.Request) (PaginatedFeedQuery, error) 
 
 	return fq, nil
 }
-

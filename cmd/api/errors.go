@@ -40,6 +40,10 @@ func (app *application) handleServiceError(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *application) internalServerError(w http.ResponseWriter, r *http.Request, err error) {
+	if err == nil {
+        err = errors.New("unknown internal error")
+    }
+	
 	app.logger.Errorw("Internal error", "method", r.Method, "path", r.URL.Path, "error", err.Error())
 
 	writeJSONError(w, http.StatusInternalServerError, "The Server encountered a problem")

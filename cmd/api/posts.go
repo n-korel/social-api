@@ -8,7 +8,6 @@ import (
 	"github.com/n-korel/social-api/internal/service"
 )
 
-
 type CreatePostPayload struct {
 	Title   string   `json:"title" validate:"required,max=100"`
 	Content string   `json:"content" validate:"required,max=1000"`
@@ -178,4 +177,3 @@ func (app *application) updatePostHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 }
-
