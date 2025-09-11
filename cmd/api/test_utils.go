@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func newTestApplication(t *testing.T,  cfg config) *application {
+func newTestApplication(t *testing.T, cfg config) *application {
 	t.Helper()
 
 	logger := zap.NewNop().Sugar()
@@ -32,8 +32,8 @@ func newTestApplication(t *testing.T,  cfg config) *application {
 		store:         mockStore,
 		cacheStorage:  mockCachestore,
 		authenticator: testAuth,
-		config: cfg,
-		rateLimiter: rateLimiter,
+		config:        cfg,
+		rateLimiter:   rateLimiter,
 	}
 }
 

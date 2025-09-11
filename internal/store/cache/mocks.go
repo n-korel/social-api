@@ -22,3 +22,6 @@ func (m *MockUserStore) Get(ctx context.Context, id int64) (*store.User, error) 
 func (m *MockUserStore) Set(ctx context.Context, user *store.User) error {
 	return nil
 }
+
+func (m *MockUserStore) Delete(ctx context.Context, userID int64) {
+}
