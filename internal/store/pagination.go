@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type PaginatedFeedQuery struct {
@@ -58,11 +57,3 @@ func (fq PaginatedFeedQuery) Parse(r *http.Request) (PaginatedFeedQuery, error) 
 	return fq, nil
 }
 
-func parseTime(s string) string {
-	t, err := time.Parse(time.DateTime, s)
-	if err != nil {
-		return ""
-	}
-
-	return t.Format(time.DateTime)
-}

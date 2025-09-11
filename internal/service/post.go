@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	ErrPostNotFound = errors.New("Post not found")
+	ErrPostNotFound = errors.New("post not found")
 )
 
 type PostUpdateRequest struct {
@@ -36,7 +36,7 @@ func (s *PostService) CreatePost(ctx context.Context, userID int64, title, conte
 	}
 
 	if err := s.store.Posts.Create(ctx, post); err != nil {
-		return nil, fmt.Errorf("Failed to create post: %w", err)
+		return nil, fmt.Errorf("failed to create post: %w", err)
 	}
 
 	return post, nil
@@ -48,13 +48,13 @@ func (s *PostService) GetPostByID(ctx context.Context, postID int64) (*store.Pos
 		if errors.Is(err, store.ErrNotFound) {
 			return nil, ErrPostNotFound
 		}
-		return nil, fmt.Errorf("Failed to get post: %w", err)
+		return nil, fmt.Errorf("failed to get post: %w", err)
 	}
 
 	// Comments
 	comments, err := s.store.Comments.GetByPostID(ctx, postID)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get comments: %w", err)
+		return nil, fmt.Errorf("failed to get comments: %w", err)
 	}
 	post.Comments = comments
 
@@ -67,7 +67,7 @@ func (s *PostService) UpdatePost(ctx context.Context, postID int64, updates Post
 		if errors.Is(err, store.ErrNotFound) {
 			return nil, ErrPostNotFound
 		}
-		return nil, fmt.Errorf("Failed to get post: %w", err)
+		return nil, fmt.Errorf("failed to get post: %w", err)
 	}
 
 	if updates.Title != nil {
@@ -81,7 +81,7 @@ func (s *PostService) UpdatePost(ctx context.Context, postID int64, updates Post
 		if errors.Is(err, store.ErrNotFound) {
 			return nil, ErrPostNotFound
 		}
-		return nil, fmt.Errorf("Failed to update post: %w", err)
+		return nil, fmt.Errorf("failed to update post: %w", err)
 	}
 
 	return post, nil
@@ -92,7 +92,7 @@ func (s *PostService) DeletePost(ctx context.Context, postID int64) error {
 		if errors.Is(err, store.ErrNotFound) {
 			return ErrPostNotFound
 		}
-		return fmt.Errorf("Failed to delete post: %w", err)
+		return fmt.Errorf("failed to delete post: %w", err)
 	}
 	return nil
 }
@@ -107,7 +107,7 @@ func (s *PostService) CanUserModifyPost(ctx context.Context, user *store.User, p
 	// Role check
 	role, err := s.store.Roles.GetByName(ctx, requiredRole)
 	if err != nil {
-		return false, fmt.Errorf("Failed to get role: %w", err)
+		return false, fmt.Errorf("failed to get role: %w", err)
 	}
 
 	return user.Role.Level >= role.Level, nil
@@ -116,7 +116,7 @@ func (s *PostService) CanUserModifyPost(ctx context.Context, user *store.User, p
 func (s *PostService) GetUserFeed(ctx context.Context, userID int64, query store.PaginatedFeedQuery) ([]store.PostWithMetadata, error) {
 	feed, err := s.store.Posts.GetUserFeed(ctx, userID, query)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get user feed: %w", err)
+		return nil, fmt.Errorf("failed to get user feed: %w", err)
 	}
 	return feed, nil
 }

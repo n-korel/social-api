@@ -6,12 +6,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/n-korel/social-api/internal/service"
-	"github.com/n-korel/social-api/internal/store"
 )
 
-type postKey string
-
-const postCtx postKey = "post"
 
 type CreatePostPayload struct {
 	Title   string   `json:"title" validate:"required,max=100"`
@@ -183,7 +179,3 @@ func (app *application) updatePostHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
-func getPostFromCtx(r *http.Request) *store.Post {
-	post, _ := r.Context().Value(postCtx).(*store.Post)
-	return post
-}

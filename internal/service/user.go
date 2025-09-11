@@ -14,12 +14,12 @@ import (
 )
 
 var (
-	ErrUserNotFound           = errors.New("User not found")
-	ErrEmailAlreadyExists     = errors.New("Rmail already exists")
-	ErrUsernameAlreadyExists  = errors.New("Username already exists")
-	ErrInvalidActivationToken = errors.New("Invalid or expired activation token")
-	ErrCannotFollowSelf       = errors.New("Cannot follow yourself")
-	ErrAlreadyFollowing       = errors.New("Already following this user")
+	ErrUserNotFound           = errors.New("user not found")
+	ErrEmailAlreadyExists     = errors.New("email already exists")
+	ErrUsernameAlreadyExists  = errors.New("username already exists")
+	ErrInvalidActivationToken = errors.New("invalid or expired activation token")
+	ErrCannotFollowSelf       = errors.New("cannot follow yourself")
+	ErrAlreadyFollowing       = errors.New("already following this user")
 )
 
 type UserService struct {
@@ -65,7 +65,7 @@ func (s *UserService) RegisterUser(ctx context.Context, username, email, passwor
 
 	// Hash user password
 	if err := user.Password.Set(password); err != nil {
-		return nil, "", fmt.Errorf("Failed to hash password: %w", err)
+		return nil, "", fmt.Errorf("failed to hash password: %w", err)
 	}
 
 	// Hash token for storage but keep plain token for email
@@ -83,9 +83,9 @@ func (s *UserService) RegisterUser(ctx context.Context, username, email, passwor
 	if err := s.sendActivationEmail(user, plainToken); err != nil {
 		// Rollback if email fails
 		if delErr := s.store.Users.Delete(ctx, user.ID); delErr != nil {
-			return nil, "", fmt.Errorf("Failed to send email and rollback: %w, rollback error: %v", err, delErr)
+			return nil, "", fmt.Errorf("failed to send email and rollback: %w, rollback error: %v", err, delErr)
 		}
-		return nil, "", fmt.Errorf("Failed to send activation email: %w", err)
+		return nil, "", fmt.Errorf("failed to send activation email: %w", err)
 	}
 
 	return user, plainToken, nil
@@ -97,7 +97,7 @@ func (s *UserService) ActivateUser(ctx context.Context, token string) error {
 		if errors.Is(err, store.ErrNotFound) {
 			return ErrInvalidActivationToken
 		}
-		return fmt.Errorf("Failed to activate user: %w", err)
+		return fmt.Errorf("failed to activate user: %w", err)
 	}
 	return nil
 }
@@ -110,7 +110,7 @@ func (s *UserService) GetUserByID(ctx context.Context, userID int64, useCache bo
 	// Try cache
 	user, err := s.cache.Users().Get(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("Cache error: %w", err)
+		return nil, fmt.Errorf("cache error: %w", err)
 	}
 
 	if user == nil {
@@ -131,12 +131,12 @@ func (s *UserService) GetUserByID(ctx context.Context, userID int64, useCache bo
 func (s *UserService) FollowUser(ctx context.Context, followerID, followedID int64) error {
 	// Validate that follower user exist
 	if _, err := s.getUserFromDB(ctx, followerID); err != nil {
-		return fmt.Errorf("Follower not found: %w", err)
+		return fmt.Errorf("follower not found: %w", err)
 	}
 
 	// Validate that followed user exist
 	if _, err := s.getUserFromDB(ctx, followedID); err != nil {
-		return fmt.Errorf("Followed user not found: %w", err)
+		return fmt.Errorf("followed user not found: %w", err)
 	}
 
 	// Self-following
@@ -149,7 +149,7 @@ func (s *UserService) FollowUser(ctx context.Context, followerID, followedID int
 		if errors.Is(err, store.ErrConflict) {
 			return ErrAlreadyFollowing
 		}
-		return fmt.Errorf("Failed to follow user: %w", err)
+		return fmt.Errorf("failed to follow user: %w", err)
 	}
 
 	return nil
@@ -158,7 +158,7 @@ func (s *UserService) FollowUser(ctx context.Context, followerID, followedID int
 func (s *UserService) UnfollowUser(ctx context.Context, followerID, followedID int64) error {
 	err := s.store.Followers.Unfollow(ctx, followerID, followedID)
 	if err != nil {
-		return fmt.Errorf("Failed to unfollow user: %w", err)
+		return fmt.Errorf("failed to unfollow user: %w", err)
 	}
 	return nil
 }
@@ -169,7 +169,7 @@ func (s *UserService) getUserFromDB(ctx context.Context, userID int64) (*store.U
 		if errors.Is(err, store.ErrNotFound) {
 			return nil, ErrUserNotFound
 		}
-		return nil, fmt.Errorf("Failed to get user: %w", err)
+		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
 	return user, nil
 }
@@ -203,6 +203,6 @@ func (s *UserService) handleUserCreationError(err error) error {
 	case store.ErrDuplicateUsername:
 		return ErrUsernameAlreadyExists
 	default:
-		return fmt.Errorf("Failed to create user: %w", err)
+		return fmt.Errorf("failed to create user: %w", err)
 	}
 }

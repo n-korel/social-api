@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	ErrInvalidCredentials = errors.New("Invalid email or password")
-	ErrInvalidToken       = errors.New("Invalid token")
+	ErrInvalidCredentials = errors.New("invalid email or password")
+	ErrInvalidToken       = errors.New("invalid token")
 )
 
 type AuthService struct {
@@ -42,7 +42,7 @@ func (s *AuthService) CreateToken(ctx context.Context, email, password string) (
 		if errors.Is(err, store.ErrNotFound) {
 			return "", ErrInvalidCredentials
 		}
-		return "", fmt.Errorf("Failed to get user: %w", err)
+		return "", fmt.Errorf("failed to get user: %w", err)
 	}
 
 	// Verify password
@@ -63,7 +63,7 @@ func (s *AuthService) CreateToken(ctx context.Context, email, password string) (
 	// Generate token -> add claims
 	token, err := s.authenticator.GenerateToken(claims)
 	if err != nil {
-		return "", fmt.Errorf("Failed to generate token: %w", err)
+		return "", fmt.Errorf("failed to generate token: %w", err)
 	}
 
 	return token, nil

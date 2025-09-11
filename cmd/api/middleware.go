@@ -16,14 +16,14 @@ func (app *application) AuthTokenMiddleware(next http.Handler) http.Handler {
 		// Read the Auth Header
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			app.unauthorizedErrorResponse(w, r, fmt.Errorf("Authorization header is missing"))
+			app.unauthorizedErrorResponse(w, r, fmt.Errorf("authorization header is missing"))
 			return
 		}
 
 		// Parse
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			app.unauthorizedErrorResponse(w, r, fmt.Errorf("Authorization header is malformed"))
+			app.unauthorizedErrorResponse(w, r, fmt.Errorf("authorization header is malformed"))
 			return
 		}
 
@@ -56,14 +56,14 @@ func (app *application) BasicAuthMiddleware() func(http.Handler) http.Handler {
 			// Read the Auth Header
 			authHeader := r.Header.Get("Authorization")
 			if authHeader == "" {
-				app.unauthorizedBasicErrorResponse(w, r, fmt.Errorf("Authorization header is missing"))
+				app.unauthorizedBasicErrorResponse(w, r, fmt.Errorf("authorization header is missing"))
 				return
 			}
 
 			// Parse it -> get the base64
 			parts := strings.Split(authHeader, " ")
 			if len(parts) != 2 || parts[0] != "Basic" {
-				app.unauthorizedBasicErrorResponse(w, r, fmt.Errorf("Authorization header is malformed"))
+				app.unauthorizedBasicErrorResponse(w, r, fmt.Errorf("authorization header is malformed"))
 				return
 			}
 
@@ -80,7 +80,7 @@ func (app *application) BasicAuthMiddleware() func(http.Handler) http.Handler {
 
 			credential := strings.SplitN(string(decoded), ":", 2)
 			if len(credential) != 2 || credential[0] != username || credential[1] != pass {
-				app.unauthorizedBasicErrorResponse(w, r, fmt.Errorf("Invalid Credemtials"))
+				app.unauthorizedBasicErrorResponse(w, r, fmt.Errorf("invalid Credemtials"))
 				return
 			}
 
