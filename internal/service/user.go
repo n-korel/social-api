@@ -35,6 +35,14 @@ type UserServiceConfig struct {
 	IsProductionEnv bool
 }
 
+type UserServiceInterface interface {
+	RegisterUser(ctx context.Context, username, email, password string) (*store.User, string, error)
+	GetUserByID(ctx context.Context, userID int64, useCache bool) (*store.User, error)
+	ActivateUser(ctx context.Context, token string) error
+	FollowUser(ctx context.Context, followerID, followedID int64) error
+	UnfollowUser(ctx context.Context, followerID, followedID int64) error
+}
+
 type UserCache interface {
 	Get(context.Context, int64) (*store.User, error)
 	Set(context.Context, *store.User) error

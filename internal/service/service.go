@@ -7,9 +7,9 @@ import (
 )
 
 type Services struct {
-	Users *UserService
-	Posts *PostService
-	Auth  *AuthService
+	Users UserServiceInterface
+	Posts PostServiceInterface
+	Auth  AuthServiceInterface
 }
 
 func NewServices(

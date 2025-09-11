@@ -163,7 +163,7 @@ func TestUserService_RegisterUser(t *testing.T) {
 				userStore.On("Delete", mock.Anything, mock.Anything).
 					Return(nil)
 			},
-			expectedError: errors.New("Failed to send activation email"),
+			expectedError: errors.New("failed to send activation email"),
 		},
 	}
 

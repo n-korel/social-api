@@ -27,6 +27,11 @@ type AuthServiceConfig struct {
 	TokenHost       string
 }
 
+type AuthServiceInterface interface {
+	CreateToken(ctx context.Context, email, password string) (string, error)
+	ValidateToken(token string) (int64, error)
+}
+
 func NewAuthService(store store.Storage, authenticator auth.Authenticator, config AuthServiceConfig) *AuthService {
 	return &AuthService{
 		store:         store,

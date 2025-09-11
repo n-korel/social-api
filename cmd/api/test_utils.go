@@ -7,6 +7,7 @@ import (
 
 	"github.com/n-korel/social-api/internal/auth"
 	"github.com/n-korel/social-api/internal/ratelimiter"
+	"github.com/n-korel/social-api/internal/service"
 	"github.com/n-korel/social-api/internal/store"
 	"github.com/n-korel/social-api/internal/store/cache"
 	"go.uber.org/zap"
@@ -27,11 +28,18 @@ func newTestApplication(t *testing.T, cfg config) *application {
 		cfg.rateLimiter.TimeFrame,
 	)
 
+	services := &service.Services{
+		Users: &service.MockUserService{},
+		Posts: &service.MockPostService{},
+		Auth:  &service.MockAuthService{},
+	}
+
 	return &application{
 		logger:        logger,
 		store:         mockStore,
 		cacheStorage:  mockCachestore,
 		authenticator: testAuth,
+		services:      services,
 		config:        cfg,
 		rateLimiter:   rateLimiter,
 	}

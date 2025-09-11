@@ -21,6 +21,15 @@ type PostService struct {
 	store store.Storage
 }
 
+type PostServiceInterface interface {
+	CreatePost(ctx context.Context, userID int64, title, content string, tags []string) (*store.Post, error)
+	GetPostByID(ctx context.Context, postID int64) (*store.Post, error)
+	UpdatePost(ctx context.Context, postID int64, updates PostUpdateRequest) (*store.Post, error)
+	DeletePost(ctx context.Context, postID int64) error
+	CanUserModifyPost(ctx context.Context, user *store.User, post *store.Post, requiredRole string) (bool, error)
+	GetUserFeed(ctx context.Context, userID int64, query store.PaginatedFeedQuery) ([]store.PostWithMetadata, error)
+}
+
 func NewPostService(store store.Storage) *PostService {
 	return &PostService{
 		store: store,
