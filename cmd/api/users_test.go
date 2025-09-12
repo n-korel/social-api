@@ -49,7 +49,7 @@ func TestGetUser(t *testing.T) {
 				Level: 1,
 			},
 		}
-		mockUserService.On("GetUserByID", mock.Anything, int64(1), true).Return(expectedUser, nil).Once()
+		mockUserService.On("GetUserByID", mock.Anything, int64(1), true).Return(expectedUser, nil)
 
 		req, err := http.NewRequest(http.MethodGet, "/v1/users/1", nil)
 		if err != nil {
