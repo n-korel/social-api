@@ -28,10 +28,14 @@ func newTestApplication(t *testing.T, cfg config) *application {
 		cfg.rateLimiter.TimeFrame,
 	)
 
+	mockAuthService := &service.MockAuthService{}
+	mockUserService := &service.MockUserService{}
+	mockPostService := &service.MockPostService{}
+
 	services := &service.Services{
-		Users: &service.MockUserService{},
-		Posts: &service.MockPostService{},
-		Auth:  &service.MockAuthService{},
+		Users: mockUserService,
+		Posts: mockPostService,
+		Auth:  mockAuthService,
 	}
 
 	return &application{
