@@ -17,11 +17,11 @@ jobs:
         id: get_version
         run: |
           VERSION=$(grep -oP '\[\K[0-9]+\.[0-9]+\.[0-9]+' CHANGELOG.md | head -1)
-          echo "::set-output name=VERSION::$VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Update version in cmd/api/main.go
         run: |
-          sed -i "s/var version = \".*\"/var version = \"${{ steps.get_version.outputs.VERSION }}\"/" cmd/api/main.go
+          sed -i -E "s/var version = \".*\"/var version = \"${{ steps.get_version.outputs.VERSION }}\"/" cmd/api/main.go
 
       - name: Commit and push if changed
         run: |
