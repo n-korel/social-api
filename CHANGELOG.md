@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/n-korel/social-api/compare/v1.0.0...v1.1.0) (2025-09-12)
+
+
+### Features
+
+* update api version automatically ([aefe3ba](https://github.com/n-korel/social-api/commit/aefe3ba499df32d7348a7940d77695373827cf8e))
+
 ## 1.0.0 (2025-09-12)
 
 
