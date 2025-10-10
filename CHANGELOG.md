@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/n-korel/social-api/compare/v1.1.1...v1.2.0) (2025-10-10)
+
+
+### Features
+
+* add README file ([fa2b118](https://github.com/n-korel/social-api/commit/fa2b11867b6e31f4dc79cd3c5ff1cbffdf4cad88))
+
 ## [1.1.1](https://github.com/n-korel/social-api/compare/v1.1.0...v1.1.1) (2025-09-12)
 
 
