@@ -19,7 +19,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var version = "1.2.0"
+var version = "1.3.0"
 
 //	@title			Social Forum Golang API
 //	@description	API for Social Forum Golang
